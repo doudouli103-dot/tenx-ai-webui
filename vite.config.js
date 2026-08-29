@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const mediaTarget = env.VITE_MEDIA_PROXY_TARGET || 'http://127.0.0.1:8091'
+  const mediaTarget = env.VITE_MEDIA_PROXY_TARGET || 'http://127.0.0.1:8092'
 
   return {
     plugins: [vue()],

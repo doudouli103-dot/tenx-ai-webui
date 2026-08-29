@@ -45,13 +45,13 @@ API Key: local-dev-key
 Vite proxies `/media` to:
 
 ```text
-http://127.0.0.1:8091
+http://127.0.0.1:8092
 ```
 
 To point the dev proxy to another media service host:
 
 ```bash
-VITE_MEDIA_PROXY_TARGET=http://Windows-IP:8091 npm run dev
+VITE_MEDIA_PROXY_TARGET=http://Windows-IP:8092 npm run dev
 ```
 
 ## Build
