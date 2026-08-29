@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-export function createGatewayClient(settings) {
-  const baseURL = trimTrailingSlash(settings.gatewayBaseUrl || '/gateway/v1')
+export function createMediaClient(settings) {
+  const baseURL = trimTrailingSlash(settings.mediaBaseUrl || '/media/api/v1')
   const apiKey = settings.apiKey || ''
 
   const client = axios.create({

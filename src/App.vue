@@ -14,11 +14,11 @@
       <section class="config-block">
         <div class="section-title">
           <Settings :size="18" />
-          <span>Gateway</span>
+          <span>Media Service</span>
         </div>
         <el-form label-position="top">
           <el-form-item label="Base URL">
-            <el-input v-model="settings.gatewayBaseUrl" />
+            <el-input v-model="settings.mediaBaseUrl" />
           </el-form-item>
           <el-form-item label="API Key">
             <el-input v-model="settings.apiKey" type="password" show-password />
@@ -202,7 +202,7 @@ import {
   Sparkles,
   WandSparkles
 } from '@lucide/vue'
-import { createGatewayClient } from './api'
+import { createMediaClient } from './api'
 
 const activeTab = ref('image')
 const models = ref([])
@@ -259,7 +259,7 @@ onBeforeUnmount(() => {
 async function loadModels() {
   modelsLoading.value = true
   try {
-    const data = await gateway().listModels()
+    const data = await mediaService().listModels()
     models.value = data.data || []
     chooseDefaults()
   } catch (error) {
@@ -273,7 +273,7 @@ async function generateImage() {
   imageLoading.value = true
   imageResultUrl.value = ''
   try {
-    const data = await gateway().generateImage({ ...imageForm })
+    const data = await mediaService().generateImage({ ...imageForm })
     const first = data.data && data.data[0]
     imageResultUrl.value = first ? first.url : ''
     ElMessage.success('图片已生成')
@@ -288,7 +288,7 @@ async function submitVideo() {
   videoSubmitting.value = true
   resetVideoTask()
   try {
-    const data = await gateway().submitVideo({ ...videoForm })
+    const data = await mediaService().submitVideo({ ...videoForm })
     Object.assign(videoTask, data)
     startPolling(data.task_id)
     ElMessage.success('视频任务已提交')
@@ -303,7 +303,7 @@ function startPolling(taskId) {
   stopPolling()
   pollTimer.value = window.setInterval(async () => {
     try {
-      const data = await gateway().getVideoTask(taskId)
+      const data = await mediaService().getVideoTask(taskId)
       Object.assign(videoTask, data)
       if (data.status === 'succeeded' || data.status === 'failed') {
         stopPolling()
@@ -353,21 +353,26 @@ function chooseDefaults() {
   }
 }
 
-function gateway() {
-  return createGatewayClient(settings)
+function mediaService() {
+  return createMediaClient(settings)
 }
 
 function loadSettings() {
   const saved = localStorage.getItem('tenx-ai-webui-settings')
   if (saved) {
     try {
-      return JSON.parse(saved)
+      const parsed = JSON.parse(saved)
+      if (parsed.gatewayBaseUrl && !parsed.mediaBaseUrl) {
+        parsed.mediaBaseUrl = '/media/api/v1'
+        delete parsed.gatewayBaseUrl
+      }
+      return parsed
     } catch (error) {
       localStorage.removeItem('tenx-ai-webui-settings')
     }
   }
   return {
-    gatewayBaseUrl: '/gateway/v1',
+    mediaBaseUrl: '/media/api/v1',
     apiKey: 'local-dev-key'
   }
 }
