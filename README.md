@@ -8,21 +8,64 @@
 - Video generation through `POST /api/v1/videos/generations`
 - Video task polling through `GET /api/v1/videos/tasks/{taskId}`
 - Real model names such as `qwen-image`, `flux-dev`, `wan2.2-ti2v-5b`
-- Result preview from the document center URL returned by the media service
+- Result preview from the asset URL returned by `tenx-ai-media-service`
+
+## Project Role
+
+`tenx-ai-webui` is the separated frontend for direct image/video media generation. It calls only `tenx-ai-media-service`; it does not call `tenx-ai-gateway`, `tenx-ai-tts-adapter`, or `study-ai-document-center-backend` directly.
+
+Use `video-agent-webui` for short-video Agent workflows. Use `tenx-ai-webui` when you want a lower-level image/video generation console.
+
+## Calling Chains
+
+Image generation:
+
+```text
+browser
+  -> tenx-ai-webui
+      -> tenx-ai-media-service /api/v1/images/generations
+          -> tenx-ai-gateway /v1/images/generations
+              -> image-adapter
+                  -> ComfyUI
+          -> tenx-ai-media-service storage/media
+      -> browser opens /api/v1/assets/<file_id>
+```
+
+Video generation:
+
+```text
+browser
+  -> tenx-ai-webui
+      -> tenx-ai-media-service /api/v1/videos/generations
+          -> tenx-ai-gateway /v1/videos/generations
+              -> video-adapter
+                  -> ComfyUI / Wan runtime
+          -> tenx-ai-media-service storage/media
+      -> tenx-ai-webui polls /api/v1/videos/tasks/{taskId}
+      -> browser opens /api/v1/assets/<file_id>
+```
 
 ## Start
 
-Start `study-ai-document-center-backend`, `tenx-ai-gateway`, and `tenx-ai-media-service` first:
+Start dependencies first:
+
+```text
+1. tenx-ai-gateway
+2. tenx-ai-media-service
+3. tenx-ai-webui
+```
+
+Start `tenx-ai-media-service`:
 
 ```bash
-cd /Users/lijunwei/PycharmProjects/tenx-ai-media-service
+cd /Users/junweili1992163.com/ljwStudy/study-ai/tenx-ai-media-service
 mvn spring-boot:run
 ```
 
 Start this Web UI:
 
 ```bash
-cd /Users/lijunwei/PycharmProjects/tenx-ai-webui
+cd /Users/junweili1992163.com/ljwStudy/study-ai/tenx-ai-webui
 npm install
 npm run dev
 ```
