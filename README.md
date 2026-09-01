@@ -7,6 +7,8 @@
 - Image generation through `POST /api/v1/images/generations`
 - Video generation through `POST /api/v1/videos/generations`
 - Video task polling through `GET /api/v1/videos/tasks/{taskId}`
+- Failed video task retry through `POST /api/v1/videos/tasks/{taskId}/retry`
+- Video task metadata display for provider task ID and timestamps
 - Real model names such as `qwen-image`, `flux-dev`, `wan2.2-ti2v-5b`
 - Result preview from the asset URL returned by `tenx-ai-media-service`
 

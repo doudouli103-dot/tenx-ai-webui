@@ -168,6 +168,20 @@
                 <span>{{ videoTask.status || 'idle' }}</span>
                 <small>{{ videoTask.task_id || 'no task' }}</small>
               </div>
+              <dl v-if="videoTask.task_id" class="task-meta-grid">
+                <div>
+                  <dt>Provider Task</dt>
+                  <dd>{{ videoTask.provider_task_id || '-' }}</dd>
+                </div>
+                <div>
+                  <dt>Created</dt>
+                  <dd>{{ formatTime(videoTask.created_at) }}</dd>
+                </div>
+                <div>
+                  <dt>Updated</dt>
+                  <dd>{{ formatTime(videoTask.updated_at) }}</dd>
+                </div>
+              </dl>
               <div v-if="videoTask.result_url" class="preview-frame video-frame">
                 <video :src="videoTask.result_url" controls />
               </div>
@@ -179,6 +193,10 @@
                 {{ videoTask.result_url }}
               </a>
               <p v-if="videoTask.error" class="error-text">{{ videoTask.error }}</p>
+              <el-button v-if="videoTask.status === 'failed'" type="primary" plain :loading="videoRetrying" @click="retryVideo">
+                <RefreshCw :size="16" />
+                重试任务
+              </el-button>
             </section>
           </section>
         </el-tab-pane>
@@ -209,6 +227,7 @@ const models = ref([])
 const modelsLoading = ref(false)
 const imageLoading = ref(false)
 const videoSubmitting = ref(false)
+const videoRetrying = ref(false)
 const imageResultUrl = ref('')
 const pollTimer = ref(null)
 
@@ -233,6 +252,9 @@ const videoTask = reactive({
   status: '',
   file_id: '',
   result_url: '',
+  provider_task_id: '',
+  created_at: '',
+  updated_at: '',
   error: ''
 })
 
@@ -301,19 +323,41 @@ async function submitVideo() {
 
 function startPolling(taskId) {
   stopPolling()
+  pollVideoTask(taskId)
   pollTimer.value = window.setInterval(async () => {
-    try {
-      const data = await mediaService().getVideoTask(taskId)
-      Object.assign(videoTask, data)
-      if (data.status === 'succeeded' || data.status === 'failed') {
-        stopPolling()
-      }
-    } catch (error) {
-      stopPolling()
-      videoTask.status = 'failed'
-      videoTask.error = readError(error)
-    }
+    pollVideoTask(taskId)
   }, 2500)
+}
+
+async function pollVideoTask(taskId) {
+  try {
+    const data = await mediaService().getVideoTask(taskId)
+    Object.assign(videoTask, data)
+    if (data.status === 'succeeded' || data.status === 'failed') {
+      stopPolling()
+    }
+  } catch (error) {
+    stopPolling()
+    videoTask.status = 'failed'
+    videoTask.error = readError(error)
+  }
+}
+
+async function retryVideo() {
+  if (!videoTask.task_id) {
+    return
+  }
+  videoRetrying.value = true
+  try {
+    const data = await mediaService().retryVideoTask(videoTask.task_id)
+    Object.assign(videoTask, data)
+    startPolling(data.task_id)
+    ElMessage.success('视频任务已重试')
+  } catch (error) {
+    ElMessage.error(readError(error))
+  } finally {
+    videoRetrying.value = false
+  }
 }
 
 function stopPolling() {
@@ -329,8 +373,22 @@ function resetVideoTask() {
     status: '',
     file_id: '',
     result_url: '',
+    provider_task_id: '',
+    created_at: '',
+    updated_at: '',
     error: ''
   })
+}
+
+function formatTime(value) {
+  if (!value) {
+    return '-'
+  }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+  return date.toLocaleString()
 }
 
 function selectModel(model) {

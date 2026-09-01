@@ -32,6 +32,11 @@ export function createMediaClient(settings) {
     async getVideoTask(taskId) {
       const response = await client.get(`/videos/tasks/${encodeURIComponent(taskId)}`)
       return response.data
+    },
+
+    async retryVideoTask(taskId) {
+      const response = await client.post(`/videos/tasks/${encodeURIComponent(taskId)}/retry`)
+      return response.data
     }
   }
 }
