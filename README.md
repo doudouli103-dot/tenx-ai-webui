@@ -75,7 +75,7 @@ npm run dev
 Open:
 
 ```text
-http://127.0.0.1:5174
+http://windows.tentest.cn:5175
 ```
 
 ## Media Service Connection
@@ -96,8 +96,10 @@ http://127.0.0.1:8092
 To point the dev proxy to another media service host:
 
 ```bash
-VITE_MEDIA_PROXY_TARGET=http://Windows-IP:8092 npm run dev
+VITE_MEDIA_PROXY_TARGET=http://windows.tentest.cn:8092 npm run dev -- --port 5175
 ```
+
+The same Windows proxy target is available in `.env.windows.example`.
 
 ## Build
 

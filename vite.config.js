@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [vue()],
     server: {
-      port: 5174,
+      port: 5175,
       proxy: {
         '/media': {
           target: mediaTarget,
